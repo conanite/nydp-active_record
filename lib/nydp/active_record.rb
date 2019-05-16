@@ -118,32 +118,28 @@ module Nydp
 
     class CollectionProxy < Nydp::Pair
       module Integration
-        def _nydp_wrapper ; @_nydp_wrapper ||= Nydp::ActiveRecord::CollectionProxy.build(self) ; end
+        def _nydp_wrapper ; @_nydp_wrapper ||= (size == 0) ? Nydp::NIL : CollectionProxy.new(self, 0, size) ; end
       end
 
-      def self.build          collection ; (collection.size == 0) ? Nydp::NIL : new(collection) ; end
-      def initialize collection, index=0 ; @collection, @index = collection, index              ; end
-      def car                            ; @car_proxy ||= @collection[@index]                   ; end
-      def cdr                            ; @cdr_proxy ||= rest_of_list                          ; end
-      def size                           ; @collection.size - @index                            ; end
+      def initialize things, idx, size0 ; @collection, @index, @size0 = things, idx, size0     ; end
+      def car                           ; @car_proxy ||= @collection[@index]                   ; end
+      def cdr                           ; @cdr_proxy ||= rest_of_list                          ; end
+      def size                          ; @size0 - @index                                      ; end
 
       private
 
       def rest_of_list
         if size <= 1 ; Nydp::NIL
-        else         ; self.class.new @collection, (@index + 1)
+        else         ; self.class.new(@collection, (@index + 1), @size0)
         end
       end
     end
   end
 end
 
-# arbase = ::ActiveRecord::Base
-# nari = ::Nydp::ActiveRecord::Integration
-# arbase.send                          :include, nari
 ::ActiveRecord::Base.send                          :include, ::Nydp::ActiveRecord::Integration
 ::ActiveRecord::Associations::CollectionProxy.send :include, ::Nydp::ActiveRecord::CollectionProxy::Integration
 ::ActiveRecord::Relation.send                      :include, ::Nydp::ActiveRecord::CollectionProxy::Integration
+::ActiveRecord::Base.send                          :include, ::Nydp::ActiveRecord::UsesNoNydp
+::ActiveRecord::Base.send                          :extend , ::Nydp::ActiveRecord::Callback, ::Nydp::ActiveRecord::UsesNoNydp
 Nydp.plug_in ::Nydp::ActiveRecord::Plugin.new
-::ActiveRecord::Base.send :extend, ::Nydp::ActiveRecord::Callback, ::Nydp::ActiveRecord::UsesNoNydp
-::ActiveRecord::Base.send :include, ::Nydp::ActiveRecord::UsesNoNydp
