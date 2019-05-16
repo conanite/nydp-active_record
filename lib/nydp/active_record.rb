@@ -18,7 +18,7 @@ module Nydp
       module InstanceMethods
         def _nydp_run_event_hook e
           self.nydp_hook_in_progress = true
-          Site.nydp :"run-event-hooks", e, self
+          nydp_call :"run-event-hooks", e, self
         ensure
           self.nydp_hook_in_progress = false
         end

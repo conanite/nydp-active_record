@@ -107,3 +107,5 @@ The gem is available as open source under the terms of the [MIT License](https:/
 ## Code of Conduct
 
 Everyone interacting in the Nydp::ActiveRecord project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/nydp-active_record/blob/master/CODE_OF_CONDUCT.md).
+
+You will need to provide #nydp_call(fn, *args) on ActiveRecord::Base so that callbacks ('after-create 'after-save) will work
