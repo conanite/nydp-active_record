@@ -18,6 +18,22 @@ Or install it yourself as:
 
     $ gem install nydp-active_record
 
+
+You need to define #nydp_call on ActiveRecord::Base
+
+```ruby
+class ActiveRecord::Base
+  def nydp_ns
+    Nydp.get_nydp # or whatever you normally do to set up your nydp namespace
+  end
+
+  def nydp_call fn, *args
+    Nydp.apply_function nydp_ns, fn, *args
+  end
+end
+```
+
+
 ## Security
 
 Override `self.nydp_sanitise_attrs` on ActiveRecord::Base to control which attributes are allowed through `'build`, `'update`, and `'create` functions.
@@ -29,12 +45,12 @@ To prevent an attribute X from being read, create a `_nydp_X` method. For exampl
 ```ruby
 class Customer < ActiveRecord::Base
   def _nydp_secret_token
-    ""
+    "you can't have it"
   end
 end
 ```
 
-Any `customer.secret-token` request will return just an empty string.
+Any `customer.secret-token` request will just return "you can't have it". Normal ruby code (eg `customer.secret_token`) will continue to work as normal.
 
 To allow a non-persistent attribute to be read, add it to `nydp_whitelist`:
 
@@ -57,8 +73,6 @@ A call to `customer.needs-chasing?` will result in a call to the `#needs_chasing
 ## Usage
 
 Install this gem as described ; your active_record objects will be usable from inside nydp code.
-
-
 
 To find a customer:
 

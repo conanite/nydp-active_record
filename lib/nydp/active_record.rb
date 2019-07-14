@@ -30,9 +30,11 @@ module Nydp
 
 
     class Plugin
-      def name            ; "Nydp Rails ActiveRecord Integration" ; end
-      def loadfiles       ; []                                    ; end
-      def testfiles       ; []                                    ; end
+      def relative_path name ; File.expand_path(File.join File.dirname(__FILE__), name) ; end
+      def base_path          ; relative_path "../lisp/"                                 ; end
+      def name               ; "Nydp Rails ActiveRecord Integration"                    ; end
+      def loadfiles          ; Dir.glob(relative_path '../lisp/*.nydp').sort            ; end
+      def testfiles          ; []                                                       ; end
       def setup ns
         Nydp::Symbol.mk("update" , ns).assign(Builtin::Update.instance )
         Nydp::Symbol.mk("create" , ns).assign(Builtin::Create.instance )
