@@ -28,7 +28,6 @@ module Nydp
       end
     end
 
-
     class Plugin
       def relative_path name ; File.expand_path(File.join File.dirname(__FILE__), name) ; end
       def base_path          ; relative_path "../lisp/"                                 ; end
@@ -95,8 +94,7 @@ module Nydp
       # override this to control what gets through 'update, 'build and 'create
       def self.nydp_sanitise_attrs attrs ; attrs                                         ; end
 
-      def _nydp_whitelist       ; []                                                                                   ; end
-      def nydp_type             ; @_nydp_type ||= self.class.name.underscore_more                                      ; end
+      def nydp_type             ; @_nydp_type ||= self.class.name.underscore.gsub("/", "_")                            ; end
       def nydp_inspect_exclude  ; %w{ site_id id search_text created_at updated_at password salt }                     ; end
       def nydp_noinspect?  k, v ; self.class.column_defaults[k] == v || self.class.column_defaults[k].nil? && v == ""  ; end
       def nydp_inspectable      ; attributes.except(*nydp_inspect_exclude).delete_if { |k, v| nydp_noinspect? k, v }   ; end
@@ -116,6 +114,15 @@ module Nydp
         elsif key == :unwrap                                     ; self
         else                                                     ; _nydp_safe_send key
         end._nydp_wrapper
+      end
+
+      def self.included base
+        base.class_attribute :_nydp_whitelist
+        base.class_attribute :_nydp_procs
+        base._nydp_whitelist = Set.new
+        base._nydp_procs     = Set.new
+        delegate :_nydp_whitelist, to: :"self.class"
+        delegate :_nydp_procs    , to: :"self.class"
       end
     end
 
