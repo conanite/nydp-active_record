@@ -138,7 +138,7 @@ module Nydp
       def car                     ; @car_proxy ||= @collection[@index] ; end
       def cdr                     ; @cdr_proxy ||= rest_of_list        ; end
       def size                    ; @size0 - @index                    ; end
-      def to_ruby              *_ ; @collection                        ; end
+      def collection              ; @collection                        ; end
       def _nydp_get method_name
         case method_name.to_s.gsub(/-/, '_').to_sym
         when :offset        ; @collection.offset
