@@ -128,13 +128,24 @@ module Nydp
 
     class CollectionProxy < Nydp::Pair
       module Integration
-        def _nydp_wrapper ; @_nydp_wrapper ||= (size == 0) ? Nydp::NIL : CollectionProxy.new(self, 0, size) ; end
+        def _nydp_wrapper ;
+          return @_nydp_wrapper if @_nydp_wrapper && @_nydp_wrapper.to_ruby.object_id == self.object_id
+          @_nydp_wrapper = (size == 0) ? Nydp::NIL : CollectionProxy.new(self, 0, size) ; end
       end
 
       def initialize things, idx, size0 ; @collection, @index, @size0 = things, idx, size0     ; end
-      def car                           ; @car_proxy ||= @collection[@index]                   ; end
-      def cdr                           ; @cdr_proxy ||= rest_of_list                          ; end
-      def size                          ; @size0 - @index                                      ; end
+      def car                     ; @car_proxy ||= @collection[@index] ; end
+      def cdr                     ; @cdr_proxy ||= rest_of_list        ; end
+      def size                    ; @size0 - @index                    ; end
+      def to_ruby                 ; @collection                        ; end
+      def _nydp_get method_name
+        case method_name.to_s.gsub(/-/, '_').to_sym
+        when :offset        ; @collection.offset
+        when :per_page      ; @collection.per_page
+        when :total_entries ; @collection.total_entries
+        else nil
+        end._nydp_wrapper
+      end
 
       private
 
