@@ -144,6 +144,7 @@ module Nydp
         when :offset        ; @collection.offset
         when :per_page      ; @collection.per_page
         when :total_entries ; @collection.total_entries
+        when :total_pages   ; @collection.total_pages
         else nil
         end._nydp_wrapper
       end
