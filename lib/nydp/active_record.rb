@@ -19,6 +19,7 @@ module Nydp
 
       module InstanceMethods
         def _nydp_run_event_hook e
+          return if Thread.current[:disable_nydp_active_record_event_hooks]
           self.nydp_hook_in_progress = true
           nydp_call :"run-event-hooks", e, self
         ensure
