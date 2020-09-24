@@ -37,10 +37,11 @@ module Nydp
       def loadfiles          ; Dir.glob(relative_path '../lisp/*.nydp').sort            ; end
       def testfiles          ; []                                                       ; end
       def setup ns
-        Nydp::Symbol.mk("update" , ns).assign(Builtin::Update.instance )
-        Nydp::Symbol.mk("create" , ns).assign(Builtin::Create.instance )
-        Nydp::Symbol.mk("find"   , ns).assign(Builtin::Find.instance   )
-        Nydp::Symbol.mk("build"  , ns).assign(Builtin::Build.instance  )
+        Nydp::Symbol.mk("update"        , ns).assign(Builtin::Update.instance      )
+        Nydp::Symbol.mk("create"        , ns).assign(Builtin::Create.instance      )
+        Nydp::Symbol.mk("find"          , ns).assign(Builtin::Find.instance        )
+        Nydp::Symbol.mk("build"         , ns).assign(Builtin::Build.instance       )
+        Nydp::Symbol.mk("find-or-create", ns).assign(Builtin::FindCreate.instance  )
       end
     end
 
@@ -74,6 +75,11 @@ module Nydp
         def doit    klass, id ; klass.find id ; end
       end
 
+      class FindCreate < Persist
+        def action_name       ; "find_or_create"                ; end
+        def doit klass, attrs ; klass._nydp_find_or_create_by!(attrs) ; end
+      end
+
       class Build < Persist
         def action_name       ; "build"         ; end
         def doit klass, attrs ; klass.new attrs ; end
@@ -90,11 +96,6 @@ module Nydp
 
     module Integration
       include Nydp::AutoWrap
-
-      def self.nydp_find_descendant name ; descendants.detect { |kla| kla.name == name } ; end
-
-      # override this to control what gets through 'update, 'build and 'create
-      def self.nydp_sanitise_attrs attrs ; attrs                                         ; end
 
       def nydp_type             ; @_nydp_type ||= self.class.name.underscore.gsub("/", "_")                            ; end
       def nydp_inspect_exclude  ; %w{ site_id id search_text created_at updated_at password salt }                     ; end
@@ -119,6 +120,15 @@ module Nydp
       end
 
       def self.included base
+        def base.nydp_find_descendant name ; descendants.detect { |kla| kla.name == name } ; end
+
+        # override this to control what gets through 'update, 'build and 'create
+        def base.nydp_sanitise_attrs attrs ; attrs                         ; end
+
+        # override these to control creation behaviour in your models
+        def base._nydp_create!            attrs ; create! attrs            ; end
+        def base._nydp_find_or_create_by! attrs ; find_or_create_by! attrs ; end
+
         base.class_attribute :_nydp_whitelist
         base.class_attribute :_nydp_procs
         base._nydp_whitelist = Set.new
