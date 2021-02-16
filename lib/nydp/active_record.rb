@@ -40,6 +40,7 @@ module Nydp
         Nydp::Symbol.mk("update"        , ns).assign(Builtin::Update.instance      )
         Nydp::Symbol.mk("create"        , ns).assign(Builtin::Create.instance      )
         Nydp::Symbol.mk("find"          , ns).assign(Builtin::Find.instance        )
+        Nydp::Symbol.mk("all-instances" , ns).assign(Builtin::AllInstances.instance)
         Nydp::Symbol.mk("build"         , ns).assign(Builtin::Build.instance       )
         Nydp::Symbol.mk("find-or-create", ns).assign(Builtin::FindCreate.instance  )
       end
@@ -75,6 +76,13 @@ module Nydp
         def doit    klass, id ; klass.find id ; end
       end
 
+      class AllInstances < Persist
+        def veto_attrs      _ ; _               ; end
+        def sanitise_attrs  _ ; _               ; end
+        def action_name       ; "all-instances" ; end
+        def doit    klass, id ; klass.all       ; end
+      end
+
       class FindCreate < Persist
         def action_name       ; "find_or_create"                ; end
         def doit klass, attrs ; klass._nydp_find_or_create_by!(attrs) ; end
@@ -91,7 +99,6 @@ module Nydp
         def update_entity      e, a ; e.uses_nydp? ? do_update(e, a) : unprocessable(e)               ; end
         def builtin_invoke vm, args ; vm.push_arg r2n update_entity(n2r(args.car), n2r(args.cdr.car)) ; end
       end
-
     end
 
     module Integration
