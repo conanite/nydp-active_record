@@ -70,7 +70,7 @@ module Nydp
       end
 
       class Find < Persist
-        def veto_attrs     id ; raise "expected int, got #{id.inspect}" unless id.is_a?(::String) || id.is_a?(Fixnum) ; id ; end
+        def veto_attrs     id ; raise "expected int, got #{id.inspect}" unless id.is_a?(::String) || id.is_a?(Integer) ; id ; end
         def sanitise_attrs id ; id.to_i       ; end
         def action_name       ; "find"        ; end
         def doit    klass, id ; klass.find id ; end
