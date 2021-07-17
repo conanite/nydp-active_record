@@ -60,7 +60,7 @@ module Nydp
           raise "unknown entity type : #{args.car.inspect}"            if klass.nil?
           raise "Can't #{action_name} #{klass.name} : not allowed" unless klass.uses_nydp?
 
-          vm.push_arg r2n(doit(klass, sanitise_attrs(veto_attrs attrs)), vm.ns)
+          r2n(doit(klass, sanitise_attrs(veto_attrs attrs)), vm.ns)
         end
       end
 
@@ -94,10 +94,10 @@ module Nydp
       end
 
       class Update < Persist # just for #sanitise_attrs
-        def unprocessable         e ; raise "Can't update #{e.class.name} : not allowed"              ; end
-        def do_update          e, a ; e.tap { |ent| ent.update_attributes sanitise_attrs a }          ; end
-        def update_entity      e, a ; e.uses_nydp? ? do_update(e, a) : unprocessable(e)               ; end
-        def builtin_invoke vm, args ; vm.push_arg r2n update_entity(n2r(args.car), n2r(args.cdr.car)) ; end
+        def unprocessable         e ; raise "Can't update #{e.class.name} : not allowed"     ; end
+        def do_update          e, a ; e.tap { |ent| ent.update_attributes sanitise_attrs a } ; end
+        def update_entity      e, a ; e.uses_nydp? ? do_update(e, a) : unprocessable(e)      ; end
+        def builtin_invoke vm, args ; r2n update_entity(n2r(args.car), n2r(args.cdr.car))    ; end
       end
     end
 

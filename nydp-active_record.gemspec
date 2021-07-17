@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["conanite"]
   spec.email         = ["conan@conandalton.net"]
 
-  spec.summary       = %q{ActiveRecord integration for nydp}
+  spec.summary       = %q{Rails/ActiveRecord integration for nydp}
   spec.homepage      = "https://github.com/conanite/nydp-active_record"
   spec.license       = "MIT"
 
