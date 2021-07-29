@@ -37,12 +37,12 @@ module Nydp
       def loadfiles          ; Dir.glob(relative_path '../lisp/*.nydp').sort            ; end
       def testfiles          ; []                                                       ; end
       def setup ns
-        Nydp::Symbol.mk("update"        , ns).assign(Builtin::Update.instance      )
-        Nydp::Symbol.mk("create"        , ns).assign(Builtin::Create.instance      )
-        Nydp::Symbol.mk("find"          , ns).assign(Builtin::Find.instance        )
-        Nydp::Symbol.mk("all-instances" , ns).assign(Builtin::AllInstances.instance)
-        Nydp::Symbol.mk("build"         , ns).assign(Builtin::Build.instance       )
-        Nydp::Symbol.mk("find-or-create", ns).assign(Builtin::FindCreate.instance  )
+        ns.assign(:"update"        , Builtin::Update.instance      )
+        ns.assign(:"create"        , Builtin::Create.instance      )
+        ns.assign(:"find"          , Builtin::Find.instance        )
+        ns.assign(:"all-instances" , Builtin::AllInstances.instance)
+        ns.assign(:"build"         , Builtin::Build.instance       )
+        ns.assign(:"find-or-create", Builtin::FindCreate.instance  )
       end
     end
 
@@ -54,13 +54,13 @@ module Nydp
         def veto_attrs     attrs ; raise veto_attrs_msg(attrs) unless attrs.is_a?(::Hash)        ; attrs ; end
         def sanitise_attrs attrs ; ::ActiveRecord::Base.nydp_sanitise_attrs attrs                        ; end
 
-        def builtin_invoke vm, args
-          klass = ::ActiveRecord::Base.nydp_find_descendant(args.car.to_s)
-          attrs = n2r(args.cdr.car)
-          raise "unknown entity type : #{args.car.inspect}"            if klass.nil?
+        def call *args
+          klass = ::ActiveRecord::Base.nydp_find_descendant(args.first.to_s)
+          attrs = n2r(args[1])
+          raise "unknown entity type : #{args.first.inspect}"          if klass.nil?
           raise "Can't #{action_name} #{klass.name} : not allowed" unless klass.uses_nydp?
 
-          r2n(doit(klass, sanitise_attrs(veto_attrs attrs)), vm.ns)
+          r2n(doit(klass, sanitise_attrs(veto_attrs attrs)))
         end
       end
 
@@ -97,7 +97,7 @@ module Nydp
         def unprocessable         e ; raise "Can't update #{e.class.name} : not allowed"     ; end
         def do_update          e, a ; e.tap { |ent| ent.update_attributes sanitise_attrs a } ; end
         def update_entity      e, a ; e.uses_nydp? ? do_update(e, a) : unprocessable(e)      ; end
-        def builtin_invoke vm, args ; r2n update_entity(n2r(args.car), n2r(args.cdr.car))    ; end
+        def call              *args ; r2n update_entity(n2r(args[0]), rubify(args[1]))       ; end
       end
     end
 
