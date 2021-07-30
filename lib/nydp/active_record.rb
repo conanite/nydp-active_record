@@ -31,11 +31,11 @@ module Nydp
     end
 
     class Plugin
-      def relative_path name ; File.expand_path(File.join File.dirname(__FILE__), name) ; end
-      def base_path          ; relative_path "../lisp/"                                 ; end
-      def name               ; "Nydp Rails ActiveRecord Integration"                    ; end
-      def loadfiles          ; Dir.glob(relative_path '../lisp/*.nydp').sort            ; end
-      def testfiles          ; []                                                       ; end
+      include Nydp::PluginHelper
+      def base_path          ; relative_path "../lisp/"                                              ; end
+      def name               ; "Nydp Rails ActiveRecord Integration"                                 ; end
+      def loadfiles          ; file_readers Dir.glob(relative_path '../lisp/*.nydp').sort ; end
+      def testfiles          ; []                                                                    ; end
       def setup ns
         ns.assign(:"update"        , Builtin::Update.instance      )
         ns.assign(:"create"        , Builtin::Create.instance      )
