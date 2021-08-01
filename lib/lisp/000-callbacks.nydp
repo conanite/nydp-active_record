@@ -4,7 +4,12 @@
 (def event-hook-name (event type)
   (returnlet name (sym "~|event|-~|type|")
     (if (no:dox-lookup name)
-      (dox-add-doc name 'hook '("this hook is run ~event for instances of ~type") (list type)))))
+        (dox-add-doc name
+                     'hook
+                     '("this hook is run ~event for instances of ~type")
+                     (list type)
+                     nil
+                     (dox/attrs)))))
 
 ;; run hooks for the given event and thing
 (def run-event-hooks (event thing) (run-hooks (event-hook-name event (type-of thing)) thing))
@@ -33,5 +38,9 @@
 ;;   - one or more expressions to evaluate ; the value you pass for 'type is locally-bound within these expressions.
 (mac after-touch (type . body) `(on ,(event-hook-name 'after-touch type) (,type) ,@body))
 
-(dox-add-doc 'update 'def '("make changes to the persistent state of an object, eg (update thing { name new-name })")
-             '(thing attrs) nil '(nydp/active-record))
+(dox-add-doc 'update
+             'def
+             '("make changes to the persistent state of an object, eg (update thing { name new-name })")
+             '(thing attrs)
+             nil
+             (dox/attrs))
