@@ -56,7 +56,7 @@ module Nydp
 
         def builtin_call *args
           klass = ::ActiveRecord::Base.nydp_find_descendant(args.first.to_s)
-          attrs = n2r(args[1])
+          attrs = rubify(args[1])
           raise "unknown entity type : #{args.first.inspect}"          if klass.nil?
           raise "Can't #{action_name} #{klass.name} : not allowed" unless klass.uses_nydp?
 
