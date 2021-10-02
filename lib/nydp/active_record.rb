@@ -39,6 +39,7 @@ module Nydp
       def setup ns
         ns.assign(:"update"        , Builtin::Update.instance      )
         ns.assign(:"create"        , Builtin::Create.instance      )
+        ns.assign(:"destroy"       , Builtin::Destroy.instance     )
         ns.assign(:"find"          , Builtin::Find.instance        )
         ns.assign(:"all-instances" , Builtin::AllInstances.instance)
         ns.assign(:"build"         , Builtin::Build.instance       )
@@ -98,6 +99,12 @@ module Nydp
         def do_update     e, a ; e.tap { |ent| ent.update_attributes sanitise_attrs a } ; end
         def update_entity e, a ; e.uses_nydp? ? do_update(e, a) : unprocessable(e)      ; end
         def builtin_call *args ; r2n update_entity(n2r(args[0]), rubify(args[1]))       ; end
+      end
+
+      class Destroy < Persist # just for #sanitise_attrs
+        def unprocessable    e ; raise "Can't destroy #{e.class.name} : not allowed"    ; end
+        def destroy_entity   e ; e.uses_nydp? ? e.destroy : unprocessable(e)            ; end
+        def builtin_call *args ; r2n destroy_entity(n2r(args[0]))                       ; end
       end
     end
 
