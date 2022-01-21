@@ -50,8 +50,9 @@ module Nydp
       class Persist
         include Singleton, Nydp::Helper, Nydp::Builtin::Base
 
-        def veto_attrs_msg attrs ; "attrs must be a hash, got #{attrs.class.inspect} : #{attrs.inspect}" ; end
-        def veto_attrs     attrs ; raise veto_attrs_msg(attrs) unless attrs.is_a?(::Hash)        ; attrs ; end
+        # def veto_attrs_msg attrs ; "attrs must be a hash, got #{attrs.class.inspect} : #{attrs.inspect}" ; end
+        # def veto_attrs     attrs ; raise veto_attrs_msg(attrs) unless attrs.is_a?(::Hash)        ; attrs ; end
+        def veto_attrs     attrs ; attrs                                                                 ; end
         def sanitise_attrs attrs ; ::ActiveRecord::Base.nydp_sanitise_attrs attrs                        ; end
 
         def builtin_call *args
@@ -95,7 +96,7 @@ module Nydp
 
       class Update < Persist # just for #sanitise_attrs
         def unprocessable    e ; raise "Can't update #{e.class.name} : not allowed"     ; end
-        def do_update     e, a ; e.tap { |ent| ent.update_attributes sanitise_attrs a } ; end
+        def do_update     e, a ; e.tap { |ent| ent.update sanitise_attrs a }            ; end
         def update_entity e, a ; e.uses_nydp? ? do_update(e, a) : unprocessable(e)      ; end
         def builtin_call *args ; r2n update_entity(n2r(args[0]), rubify(args[1]))       ; end
       end
