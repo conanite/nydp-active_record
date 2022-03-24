@@ -53,8 +53,8 @@ module Nydp
 
         # def veto_attrs_msg attrs ; "attrs must be a hash, got #{attrs.class.inspect} : #{attrs.inspect}" ; end
         # def veto_attrs     attrs ; raise veto_attrs_msg(attrs) unless attrs.is_a?(::Hash)        ; attrs ; end
-        def veto_attrs     attrs ; attrs                                          ; end
-        def sanitise_attrs attrs ; ::ActiveRecord::Base.nydp_sanitise_attrs attrs ; end
+        def veto_attrs     kla, attrs ; attrs                         ; end
+        def sanitise_attrs kla, attrs ; kla.nydp_sanitise_attrs attrs ; end
 
         def builtin_call *args
           klass = ::ActiveRecord::Base.nydp_find_descendant(args.first.to_s)
@@ -62,7 +62,8 @@ module Nydp
           raise "unknown entity type : #{args.first.inspect}"          if klass.nil?
           raise "Can't #{action_name} #{klass.name} : not allowed" unless klass.uses_nydp?
 
-          r2n(doit(klass, sanitise_attrs(veto_attrs attrs)))
+
+          r2n(doit(klass, sanitise_attrs(klass, veto_attrs(klass, attrs))))
         end
       end
 
@@ -72,17 +73,19 @@ module Nydp
       end
 
       class Find < Persist
-        def veto_attrs     id ; raise "expected int, got #{id.inspect}" unless id.is_a?(::String) || id.is_a?(Integer) ; id ; end
-        def sanitise_attrs id ; id.to_i       ; end
-        def action_name       ; "find"        ; end
-        def doit    klass, id ; klass.find id ; end
+        def error_not_found     id ; raise ActiveRecord::RecordNotFound.new "can't find expected int, got #{id.inspect}" ; end
+        def id_ok               id ; id.is_a?(::String) || id.is_a?(Integer)           ; end
+        def veto_attrs     kla, id ; error_not_found(kla, id) unless id_ok(id)    ; id ; end
+        def sanitise_attrs kla, id ; id.to_i                                           ; end
+        def action_name            ; "find"                                            ; end
+        def doit           kla, id ; kla.find id                                       ; end
       end
 
       class AllInstances < Persist
-        def veto_attrs      _ ; _               ; end
-        def sanitise_attrs  _ ; _               ; end
-        def action_name       ; "all-instances" ; end
-        def doit    klass, id ; klass.all       ; end
+        def veto_attrs     k,a ; a               ; end
+        def sanitise_attrs k,a ; a               ; end
+        def action_name        ; "all-instances" ; end
+        def doit      klass, _ ; klass.all       ; end
       end
 
       class FindCreate < Persist
@@ -96,10 +99,10 @@ module Nydp
       end
 
       class Update < Persist # just for #sanitise_attrs
-        def unprocessable    e ; raise "Can't update #{e.class.name} : not allowed"  ; end
-        def do_update     e, a ; e.tap { |ent| ent.update sanitise_attrs a }         ; end
-        def update_entity e, a ; e.uses_nydp? ? do_update(e, a) : unprocessable(e)   ; end
-        def builtin_call *args ; r2n update_entity(n2r(args[0]), rubify(args[1]))    ; end
+        def unprocessable    e ; raise "Can't update #{e.class.name} : not allowed"    ; end
+        def do_update     e, a ; e.tap { |ent| ent.update sanitise_attrs(e.class, a) } ; end
+        def update_entity e, a ; e.uses_nydp? ? do_update(e, a) : unprocessable(e)     ; end
+        def builtin_call *args ; r2n update_entity(n2r(args[0]), rubify(args[1]))      ; end
       end
 
       class Destroy < Persist # just for #sanitise_attrs
