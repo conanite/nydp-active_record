@@ -73,12 +73,12 @@ module Nydp
       end
 
       class Find < Persist
-        def error_not_found     id ; raise ActiveRecord::RecordNotFound.new "can't find expected int, got #{id.inspect}" ; end
-        def id_ok               id ; id.is_a?(::String) || id.is_a?(Integer)           ; end
-        def veto_attrs     kla, id ; error_not_found(kla, id) unless id_ok(id)    ; id ; end
-        def sanitise_attrs kla, id ; id.to_i                                           ; end
-        def action_name            ; "find"                                            ; end
-        def doit           kla, id ; kla.find id                                       ; end
+        def error_not_found kla, id ; raise ::ActiveRecord::RecordNotFound.new "can't find #{kla.name} with id #{id.inspect}, expected id to be an integer" ; end
+        def id_ok                id ; id.is_a?(::String) || id.is_a?(Integer)           ; end
+        def veto_attrs      kla, id ; error_not_found(kla, id) unless id_ok(id)    ; id ; end
+        def sanitise_attrs  kla, id ; id.to_i                                           ; end
+        def action_name             ; "find"                                            ; end
+        def doit            kla, id ; kla.find id                                       ; end
       end
 
       class AllInstances < Persist
