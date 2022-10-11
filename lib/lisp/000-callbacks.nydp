@@ -12,7 +12,12 @@
                      (dox/attrs)))))
 
 ;; run hooks for the given event and thing
-(def run-event-hooks (event thing) (run-hooks (event-hook-name event (type-of thing)) thing))
+(def run-event-hooks (event thing)
+  (run-hooks
+    (event-hook-name
+      event
+      (type-of thing))
+    thing))
 
 ;; Declares code to run after a thing of type 'type is created. Use this to trigger
 ;; other updates depending on the thing being created.
@@ -20,7 +25,19 @@
 ;; 'body is either:
 ;;   - a single symbol naming an existing function to use as the hook
 ;;   - one or more expressions to evaluate ; the value you pass for 'type is locally-bound within these expressions.
-(mac after-create (type . body) `(on ,(event-hook-name 'after-create type) (,type) ,@body))
+(mac after-create (type . body)
+  `(on ,(event-hook-name 'after-create type) (,type)
+     ,@body))
+
+;; Declares code to run after a thing of type 'type is created and the corresponding db transaction is committed.
+;; Use this to trigger other updates depending on the thing being created.
+;; 'type is a symbol, for example one of '(contact course course_series course_work organisation)
+;; 'body is either:
+;;   - a single symbol naming an existing function to use as the hook
+;;   - one or more expressions to evaluate ; the value you pass for 'type is locally-bound within these expressions.
+(mac after-create-commit (type . body)
+  `(on ,(event-hook-name 'after-create-commit type) (,type)
+     ,@body))
 
 ;; Declares code to run after a thing of type 'type is saved. Use this to trigger
 ;; other updates depending on the thing being saved.
@@ -28,7 +45,9 @@
 ;; 'body is either:
 ;;   - a single symbol naming an existing function to use as the hook
 ;;   - one or more expressions to evaluate ; the value you pass for 'type is locally-bound within these expressions.
-(mac after-save (type . body) `(on ,(event-hook-name 'after-save type) (,type) ,@body))
+(mac after-save (type . body)
+  `(on ,(event-hook-name 'after-save type) (,type)
+     ,@body))
 
 ;; Declares code to run after a thing of type 'type is touched. Use this to trigger
 ;; other updates depending on the thing being touched.
@@ -36,7 +55,9 @@
 ;; 'body is either:
 ;;   - a single symbol naming an existing function to use as the hook
 ;;   - one or more expressions to evaluate ; the value you pass for 'type is locally-bound within these expressions.
-(mac after-touch (type . body) `(on ,(event-hook-name 'after-touch type) (,type) ,@body))
+(mac after-touch (type . body)
+  `(on ,(event-hook-name 'after-touch type) (,type)
+     ,@body))
 
 (dox-add-doc 'update
              'def
