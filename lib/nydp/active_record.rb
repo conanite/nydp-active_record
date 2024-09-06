@@ -1,5 +1,7 @@
 require 'singleton'
+require "nydp"
 require "nydp/active_record/version"
+require "nydp/plugin"
 
 module Nydp
   module ActiveRecord
@@ -38,13 +40,14 @@ module Nydp
       def loadfiles          ; file_readers Dir.glob(relative_path '../lisp/*.nydp').sort ; end
       def testfiles          ; []                                                                    ; end
       def setup ns
-        ns.assign(:"update"        , Builtin::Update.instance      )
-        ns.assign(:"create"        , Builtin::Create.instance      )
-        ns.assign(:"destroy"       , Builtin::Destroy.instance     )
-        ns.assign(:"find"          , Builtin::Find.instance        )
-        ns.assign(:"all-instances" , Builtin::AllInstances.instance)
-        ns.assign(:"build"         , Builtin::Build.instance       )
-        ns.assign(:"find-or-create", Builtin::FindCreate.instance  )
+        ns.assign(:"update"        , Builtin::Update.instance           )
+        ns.assign(:"assign-attrs"  , Builtin::AssignAttributes.instance )
+        ns.assign(:"create"        , Builtin::Create.instance           )
+        ns.assign(:"destroy"       , Builtin::Destroy.instance          )
+        ns.assign(:"find"          , Builtin::Find.instance             )
+        ns.assign(:"all-instances" , Builtin::AllInstances.instance     )
+        ns.assign(:"build"         , Builtin::Build.instance            )
+        ns.assign(:"find-or-create", Builtin::FindCreate.instance       )
       end
     end
 
@@ -104,6 +107,11 @@ module Nydp
         def do_update     e, a ; e.tap { |ent| ent.update sanitise_attrs(e.class, a) } ; end
         def update_entity e, a ; e.uses_nydp? ? do_update(e, a) : unprocessable(e)     ; end
         def builtin_call *args ; r2n update_entity(n2r(args[0]), rubify(args[1]))      ; end
+      end
+
+      class AssignAttributes < Update # just for #sanitise_attrs
+        def assignable e, a ; sanitise_attrs(e.class, a).slice *e.attributes.keys.map(&:to_sym) ; end
+        def do_update  e, a ; e.tap { |ent| ent.assign_attributes assignable(e, a) }            ; end
       end
 
       class Destroy < Persist # just for #sanitise_attrs
@@ -190,9 +198,11 @@ module Nydp
   end
 end
 
-::ActiveRecord::Base.send                          :include, ::Nydp::ActiveRecord::Integration
-::ActiveRecord::Associations::CollectionProxy.send :include, ::Nydp::ActiveRecord::CollectionProxy::Integration
-::ActiveRecord::Relation.send                      :include, ::Nydp::ActiveRecord::CollectionProxy::Integration
-::ActiveRecord::Base.send                          :include, ::Nydp::ActiveRecord::UsesNoNydp
-::ActiveRecord::Base.send                          :extend , ::Nydp::ActiveRecord::Callback, ::Nydp::ActiveRecord::UsesNoNydp
+if defined? ::ActiveRecord
+  ::ActiveRecord::Base.send                          :include, ::Nydp::ActiveRecord::Integration
+  ::ActiveRecord::Associations::CollectionProxy.send :include, ::Nydp::ActiveRecord::CollectionProxy::Integration
+  ::ActiveRecord::Relation.send                      :include, ::Nydp::ActiveRecord::CollectionProxy::Integration
+  ::ActiveRecord::Base.send                          :include, ::Nydp::ActiveRecord::UsesNoNydp
+  ::ActiveRecord::Base.send                          :extend , ::Nydp::ActiveRecord::Callback, ::Nydp::ActiveRecord::UsesNoNydp
+end
 Nydp.plug_in ::Nydp::ActiveRecord::Plugin.new
