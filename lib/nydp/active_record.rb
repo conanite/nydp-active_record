@@ -48,6 +48,7 @@ module Nydp
         ns.assign(:"all-instances" , Builtin::AllInstances.instance     )
         ns.assign(:"build"         , Builtin::Build.instance            )
         ns.assign(:"find-or-create", Builtin::FindCreate.instance       )
+        ns.assign(:"save"          , Builtin::Save.instance             )
       end
     end
 
@@ -118,6 +119,10 @@ module Nydp
         def unprocessable    e ; raise "Can't destroy #{e.class.name} : not allowed" ; end
         def destroy_entity   e ; e.uses_nydp? ? e.destroy : unprocessable(e)         ; end
         def builtin_call *args ; r2n destroy_entity(n2r(args[0]))                    ; end
+      end
+
+      class Save < Persist
+        def builtin_call e ; e.uses_nydp? ? e.save! : unprocessable(e) ; end
       end
     end
 

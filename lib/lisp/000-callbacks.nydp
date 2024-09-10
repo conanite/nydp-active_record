@@ -65,3 +65,17 @@
              '(thing attrs)
              nil
              (dox/attrs))
+
+(dox-add-doc 'save
+             'def
+             '("persist changes to the state of an object, eg (save thing). Error if validations fail.")
+             '(thing)
+             nil
+             (dox/attrs))
+
+(dox-add-doc 'find
+             'def
+             '("find the instance of the given type having the given id. Error if not found.")
+             '(type id)
+             nil
+             (dox/attrs))
