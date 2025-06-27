@@ -46,6 +46,7 @@ module Nydp
         ns.assign(:"create"        , Builtin::Create.instance           )
         ns.assign(:"destroy"       , Builtin::Destroy.instance          )
         ns.assign(:"find"          , Builtin::Find.instance             )
+        ns.assign(:"find?"         , Builtin::MaybeFind.instance        )
         ns.assign(:"all-instances" , Builtin::AllInstances.instance     )
         ns.assign(:"build"         , Builtin::Build.instance            )
         ns.assign(:"find-or-create", Builtin::FindCreate.instance       )
@@ -85,6 +86,11 @@ module Nydp
         def sanitise_attrs  kla, id ; id.to_i                                           ; end
         def action_name             ; "find"                                            ; end
         def doit            kla, id ; kla.find id                                       ; end
+      end
+
+      class MaybeFind < Find
+        def action_name             ; "find?"            ; end
+        def doit            kla, id ; kla.find_by id: id ; end
       end
 
       class AllInstances < Persist
