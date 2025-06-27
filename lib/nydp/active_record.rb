@@ -10,10 +10,11 @@ module Nydp
 
     module Callback
       def use_nydp
-        after_save   -> { nydp_event :"after-save"   }
-        after_create -> { nydp_event :"after-create" }
-        after_commit -> { nydp_event :"after-create-commit" }, on: :create
-        after_touch  -> { nydp_event :"after-touch"  }
+        after_save    -> { nydp_event :"after-save"   }
+        after_create  -> { nydp_event :"after-create" }
+        after_commit  -> { nydp_event :"after-create-commit" }, on: :create
+        after_destroy -> { nydp_event :"after-destroy" }
+        after_touch   -> { nydp_event :"after-touch"  }
         attr_accessor :nydp_hook_in_progress
         include InstanceMethods, UsesNydp
         extend  UsesNydp
